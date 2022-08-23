@@ -106,24 +106,8 @@ router.put("/:id", async (req, res) => {
         updateToMake.pages,
         req.params.id
     );
-
-
-    // if (req.params.id) {
-    //     sqlQuery += ` id = $7`;
-    //     params.push(req.params.id);
-    //     console.log("params.id", req.params.id);
-
-    //     if (req.body) {
-    //         console.log('req.body', req.body);
-    //         console.log('url', sqlQuery);
-    //         sqlQuery += req.body
-    //         params.push(sqlQuery)
-    //     }
-    // }
-
     const qResult = await db.query(sqlQuery, params);
 
-    
     if (qResult.rows.length) {
         res.status(201).json({
             book: qResult.rows[0]
@@ -131,7 +115,32 @@ router.put("/:id", async (req, res) => {
     } else {
         res.sendStatus(404);
     }
-    
 });
+
+// Delete book by ID
+router.delete("/:id", async (req, res) => {
+    // foundFilm = films.find((f) => f.id === Number(req.params.id))
+    console.log("deleting book")
+
+    const params = [];
+
+    let sqlQuery = `
+        DELETE FROM books
+        WHERE  
+    `
+    sqlQuery += ` id = $1 RETURNING *`;
+    params.push(req.params.id);
+    console.log("params.id", req.params.id);
+
+    const qResult = await db.query(sqlQuery, params);
+
+    if (qResult.rows.length) {
+        res.status(201).json({
+            book: qResult.rows[0]
+        });
+    } else {
+        res.sendStatus(404);
+    }
+})
 
 module.exports = router;
