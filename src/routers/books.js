@@ -90,28 +90,48 @@ router.put("/:id", async (req, res) => {
 
   let sqlQuery = `
         UPDATE books
-        SET  ($1, $2)
-        WHERE ($3)
+        SET  title = $1, type = $2 , author=$3, topic=$4, publicationdate=$5, pages=$6
+        WHERE id = $7
         RETURNING *
     `
+    console.log('sql', sqlQuery);
+
     const updateToMake = req.body
+    params.push(
+        updateToMake.title,
+        updateToMake.type,
+        updateToMake.author,
+        updateToMake.topic,
+        updateToMake.publicationdate,
+        updateToMake.pages,
+        req.params.id
+    );
 
-    if (req.params.id) {
-        sqlQuery += ` id = $1`;
-        params.push(req.params.id);
-        console.log("params.id", req.params.id);
 
-        if (req.body) {
-            console.log('req.body', req.body);
-            console.log('url', sqlQuery);
-        }
+    // if (req.params.id) {
+    //     sqlQuery += ` id = $7`;
+    //     params.push(req.params.id);
+    //     console.log("params.id", req.params.id);
+
+    //     if (req.body) {
+    //         console.log('req.body', req.body);
+    //         console.log('url', sqlQuery);
+    //         sqlQuery += req.body
+    //         params.push(sqlQuery)
+    //     }
+    // }
+
+    const qResult = await db.query(sqlQuery, params);
+
+    
+    if (qResult.rows.length) {
+        res.status(201).json({
+            book: qResult.rows[0]
+        });
+    } else {
+        res.sendStatus(404);
     }
-
-    const qResult = await db.query(sqlQuery, params, updateToMake);
-
-    res.status(201).json({
-        book: qResult
-    });
+    
 });
 
 module.exports = router;
