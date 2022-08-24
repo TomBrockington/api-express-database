@@ -1,37 +1,20 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../db");
+const { getAllBooks } = require("../domain/booksRepository");
 
-// Get all books and books by type
-router.get("/", async (req, res) => {
-  console.log("loading all books");
-  const params = [];
+// Get all Books 
 
-  let sqlQuery = "SELECT * FROM books";
+router.get('/', async (req, res) => {
+    const allBooks = await getAllBooks(req.query)
 
-  if (req.query.type) {
-    sqlQuery += ` WHERE type = $1`;
-    params.push(req.query.type);
-    console.log("params", params);
-  }
-
-  if (req.query.topic) {
-    sqlQuery += ` WHERE topic = $1`;
-    params.push(req.query.topic);
-    console.log("params", params);
-  }
-
-  const qResult = await db.query(sqlQuery, params);
-
-  res.status(200).json({
-    books: qResult.rows,
-  });
-});
+    res.json({
+        books: allBooks
+    })
+})
 
 // Get book by ID
 router.get("/:id", async (req, res) => {
-  console.log("loading all books");
-
   const params = [];
   let sqlQuery = " SELECT * FROM books WHERE ";
 
@@ -61,7 +44,7 @@ router.post("/", async (req, res) => {
         INSERT INTO books
         (title, type, author, topic, publicationdate, pages)
         VALUES ($1, $2, $3, $4, $5, $6)
-        RETURNING * 
+        RETURNING *
     `;
 
   const newBook = req.body;
@@ -126,7 +109,7 @@ router.delete("/:id", async (req, res) => {
 
     let sqlQuery = `
         DELETE FROM books
-        WHERE  
+        WHERE
     `
     sqlQuery += ` id = $1 RETURNING *`;
     params.push(req.params.id);
